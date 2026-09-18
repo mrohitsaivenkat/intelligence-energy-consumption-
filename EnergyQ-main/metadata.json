@@ -1,0 +1,6 @@
+{
+  "name": "Smart Household Energy",
+  "description": "Intelligent household energy monitoring, appliance management, consumption forecasting, bill analysis, before-you-buy appliance cost simulator, and solar ROI estimation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
