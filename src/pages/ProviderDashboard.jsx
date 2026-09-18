@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, ClipboardList, Calendar, Users, 
@@ -74,12 +74,47 @@ const ProviderSidebar = ({ activePath }) => {
 const ProviderHome = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState([
-    { id: 1, customer: 'Amit Sharma', service: 'AC Maintenance & Coil Cleaning', date: 'Today, 2:30 PM', status: 'Pending' },
-    { id: 2, customer: 'Priya Patel', service: 'Sub-meter & Smart Inverter Inspection', date: 'Tomorrow, 10:00 AM', status: 'Scheduled' },
-    { id: 3, customer: 'Rohit Mulaparthi', service: '5kW Rooftop Solar Efficiency Audit', date: 'Nov 28, 4:00 PM', status: 'Pending' },
+    { id: 1, customer: 'Amit Sharma (Mumbai)', service: 'AC Maintenance & Coil Cleaning', date: 'Today, 2:30 PM', status: 'Pending' },
+    { id: 2, customer: 'Priya Patel (Delhi NCR)', service: 'Sub-meter & Smart Inverter Inspection', date: 'Tomorrow, 10:00 AM', status: 'Scheduled' },
+    { id: 3, customer: 'Rohit Mulaparthi (Bengaluru)', service: '5kW Rooftop Solar Efficiency Audit', date: 'Next Monday, 4:00 PM', status: 'Pending' },
   ]);
 
-  const updateStatus = (id, newStatus) => {
+  // Fetch provider requests from API if available
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const providerId = user?.id || 1;
+        const res = await fetch(`/api/service-requests/provider/${providerId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map(d => ({
+              id: d.id,
+              customer: `Household #${d.user_id} (${d.address})`,
+              service: `${d.service_type} - ${d.description}`,
+              date: d.requested_date,
+              status: d.status
+            }));
+            setRequests(mapped);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching provider requests:', err);
+      }
+    };
+    fetchRequests();
+  }, [user?.id]);
+
+  const updateStatus = async (id, newStatus) => {
+    try {
+      await fetch(`/api/service-requests/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+    } catch (e) {
+      console.error(e);
+    }
     setRequests(requests.map(r => r.id === id ? { ...r, status: newStatus } : r));
   };
 
