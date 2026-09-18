@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -11,6 +11,7 @@ import './App.css';
 
 const ProtectedRoute = ({ children, role }) => {
   const { isAuthenticated, role: userRole, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -24,7 +25,7 @@ const ProtectedRoute = ({ children, role }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={`/login${role ? `?role=${role}` : ''}`} replace />;
+    return <Navigate to={`/login${role ? `?role=${role}` : ''}`} state={{ from: location.pathname + location.search }} replace />;
   }
 
   if (role && userRole && userRole !== role) {

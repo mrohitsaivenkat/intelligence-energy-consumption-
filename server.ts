@@ -170,6 +170,33 @@ const initialUsers: User[] = [
     phone: "+91 9833445566",
     address: "FC Road, Shivajinagar, Pune",
   },
+  {
+    id: 5,
+    email: "mulaparthi.rohit1234@gmail.com",
+    password_hash: hashPassword("password123"),
+    full_name: "Rohit Mulaparthi",
+    role: "household",
+    phone: "+91 9988776655",
+    address: "Bandra West, Mumbai",
+  },
+  {
+    id: 6,
+    email: "rohit@energysmart.org",
+    password_hash: hashPassword("password123"),
+    full_name: "Rohit Mulaparthi",
+    role: "household",
+    phone: "+91 9988776655",
+    address: "Bandra West, Mumbai",
+  },
+  {
+    id: 7,
+    email: "technician@energysmart.org",
+    password_hash: hashPassword("password123"),
+    full_name: "Sanjay Verma",
+    role: "provider",
+    phone: "+91 9876543210",
+    address: "Mumbai, India",
+  },
 ];
 
 function loadUsers(): User[] {
@@ -927,7 +954,7 @@ app.post("/api/auth/register", (req: Request, res: Response) => {
 });
 
 app.post("/api/auth/login", (req: Request, res: Response) => {
-  const { email, password, role } = req.body;
+  const { email, password, role, auto_register } = req.body;
   if (!email || typeof email !== "string" || !email.trim()) {
     return res.status(400).json({ detail: "Email address is required." });
   }
@@ -936,12 +963,59 @@ app.post("/api/auth/login", (req: Request, res: Response) => {
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  const user = users.find((u) => u.email.toLowerCase() === cleanEmail);
+  let user = users.find((u) => u.email.toLowerCase() === cleanEmail);
+
+  // If user does not exist and auto_register is requested, create account seamlessly
+  if (!user && auto_register) {
+    const roleVal = (role === "provider" ? "provider" : "household") as "household" | "provider";
+    const namePart = cleanEmail.split("@")[0].replace(/[._-]/g, " ");
+    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    
+    user = {
+      id: nextUserId++,
+      email: cleanEmail,
+      password_hash: hashPassword(password),
+      full_name: formattedName || "Energy User",
+      role: roleVal,
+      phone: "+91 9876543210",
+      address: "Mumbai, India",
+    };
+    users.push(user);
+    saveUsersToDisk();
+
+    if (roleVal === "household") {
+      households.push({
+        id: households.length + 1,
+        user_id: user.id,
+        home_type: "Apartment",
+        size_sqft: 1100,
+        occupants: 3,
+        location: "Mumbai",
+        monthly_budget: 3200.0,
+        solar_available: false,
+      });
+    } else {
+      providers.push({
+        id: providers.length + 1,
+        user_id: user.id,
+        business_name: `${user.full_name} Energy Services`,
+        categories: "Electrical Maintenance, Smart Energy Efficiency",
+        experience_years: 4,
+        location: "Mumbai",
+        base_price: "₹500 - ₹1200",
+        description: "Professional residential energy audit and maintenance specialist.",
+        availability_status: "Available",
+        rating: 5.0,
+        verified: true,
+      });
+    }
+  }
 
   // Exact check: user must exist in the database
   if (!user) {
     return res.status(401).json({ 
-      detail: "No account found with this email. Please check your email or create a new account." 
+      detail: "No account found with this email. You can create an account in 1 click or use a demo account below.",
+      can_auto_register: true
     });
   }
 
@@ -949,19 +1023,11 @@ app.post("/api/auth/login", (req: Request, res: Response) => {
   const isValidPassword = verifyPassword(password, user.password_hash);
   if (!isValidPassword) {
     return res.status(401).json({ 
-      detail: "Incorrect password. Please check your password and try again." 
+      detail: "Incorrect password. Please verify your password and try again." 
     });
   }
 
-  // Check role: prevent confusing cross-role logins if user explicitly requested a different role
-  if (role && (role === "household" || role === "provider") && user.role !== role) {
-    const roleName = user.role === "provider" ? "Service Provider" : "Household Resident";
-    return res.status(403).json({
-      detail: `This account is registered as a ${roleName}. Please switch to the ${roleName} tab to sign in.`,
-      registered_role: user.role,
-    });
-  }
-
+  // Seamless login: Always honor authenticated account role without throwing 403 errors
   res.json({
     access_token: `token-${user.id}-${Date.now()}`,
     token_type: "bearer",

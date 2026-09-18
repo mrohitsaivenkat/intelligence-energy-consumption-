@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html.dark body {
+    @apply bg-slate-950 text-slate-100 antialiased overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200;
+  }
+
+  html.light body {
+    @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden selection:bg-cyan-500/20 selection:text-cyan-800;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* Glass panel and card styling adaptive to theme */
+.glass-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+html.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.glass-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.dark .glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.dark .glass-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.15);
+}
+
+html.light .glass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+html.light .glass-card:hover {
+  background: #ffffff;
+  border-color: #06b6d4;
+  box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.12);
+}
+
+/* Light mode specific background and text contrast helpers */
+html.light .bg-slate-950 {
+  background-color: #f8fafc !important;
+}
+
+html.light .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-slate-900\/95,
+html.light .bg-slate-950\/95,
+html.light .bg-slate-950\/80 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-white\/5,
+html.light .bg-white\/10 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+html.light .bg-black\/20,
+html.light .bg-black\/40 {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Light mode text colors */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light h5.text-white,
+html.light .title-adaptive {
+  color: #0f172a !important;
+}
+
+html.light th.font-semibold,
+html.light td.font-semibold,
+html.light td.font-bold {
+  color: #1e293b;
+}
+
+html.light .border-white\/10,
+html.light .border-white\/5,
+html.light .border-white\/20 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-slate-800 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Keep colored button labels white */
+html.light button.bg-cyan-500,
+html.light button.bg-cyan-600,
+html.light button.bg-emerald-500,
+html.light button.bg-emerald-600,
+html.light button.bg-blue-600,
+html.light a.bg-cyan-500,
+html.light a.bg-gradient-to-r,
+html.light .btn-primary {
+  color: #ffffff !important;
+}
+
+html.light button.bg-cyan-500 *,
+html.light button.bg-emerald-500 *,
+html.light a.bg-cyan-500 *,
+html.light a.bg-gradient-to-r * {
+  color: #ffffff !important;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #020617;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

@@ -52,12 +52,13 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = useCallback(async (email, password, desiredRole) => {
+  const login = useCallback(async (email, password, desiredRole, autoRegister = false) => {
     try {
       const payload = {
         email: email.trim().toLowerCase(),
         password,
-        ...(desiredRole ? { role: desiredRole } : {})
+        ...(desiredRole ? { role: desiredRole } : {}),
+        ...(autoRegister ? { auto_register: true } : {})
       };
       const response = await axios.post('/api/auth/login', payload);
       const { access_token, user: loggedUser } = response.data;
@@ -74,7 +75,9 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: loggedUser };
     } catch (err) {
       const msg = err.response?.data?.detail || 'Invalid email or password. Please try again.';
-      throw new Error(msg);
+      const errorObj = new Error(msg);
+      errorObj.canAutoRegister = !!err.response?.data?.can_auto_register;
+      throw errorObj;
     }
   }, []);
 
@@ -108,6 +111,9 @@ export const AuthProvider = ({ children }) => {
   const quickDemoLogin = useCallback(async (demoType = 'household') => {
     if (demoType === 'provider') {
       return login('provider@example.com', 'password123', 'provider');
+    }
+    if (demoType === 'rohit') {
+      return login('mulaparthi.rohit1234@gmail.com', 'password123', 'household');
     }
     return login('household@example.com', 'password123', 'household');
   }, [login]);

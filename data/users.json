@@ -37,8 +37,8 @@
   },
   {
     "id": 5,
-    "email": "rohit@energysmart.org",
-    "password_hash": "4e17085fdbc0611286ae3c1ccfa93a3b7fa808f7fcdb9fdb10c20282a95bf73e",
+    "email": "mulaparthi.rohit1234@gmail.com",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
     "full_name": "Rohit Mulaparthi",
     "role": "household",
     "phone": "+91 9988776655",
@@ -46,10 +46,28 @@
   },
   {
     "id": 6,
+    "email": "rohit@energysmart.org",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
+    "full_name": "Rohit Mulaparthi",
+    "role": "household",
+    "phone": "+91 9988776655",
+    "address": "Bandra West, Mumbai"
+  },
+  {
+    "id": 7,
     "email": "technician@energysmart.org",
-    "password_hash": "3000e18884ba919731332352d9b99363bc6914a152a368c314b57854a215e98c",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
     "full_name": "Sanjay Verma",
     "role": "provider",
+    "phone": "+91 9876543210",
+    "address": "Mumbai, India"
+  },
+  {
+    "id": 8,
+    "email": "testnewuser@gmail.com",
+    "password_hash": "592af36511891d3a537ebf480a2f953c9e31721f5a04719b78a9ac263101c54b",
+    "full_name": "Testnewuser",
+    "role": "household",
     "phone": "+91 9876543210",
     "address": "Mumbai, India"
   }
