@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "email": "household@example.com",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
+    "full_name": "Alex Sharma",
+    "role": "household",
+    "phone": "+91 9876543210",
+    "address": "Flat 402, Green Meadows, Mumbai"
+  },
+  {
+    "id": 2,
+    "email": "provider@example.com",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
+    "full_name": "Rajesh Kumar",
+    "role": "provider",
+    "phone": "+91 9811223344",
+    "address": "Shop 14, High Street, Mumbai"
+  },
+  {
+    "id": 3,
+    "email": "sparky@example.com",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
+    "full_name": "Vikram Singh",
+    "role": "provider",
+    "phone": "+91 9822334455",
+    "address": "Sector 18, Connaught Place, Delhi"
+  },
+  {
+    "id": 4,
+    "email": "solar@example.com",
+    "password_hash": "b959a5d866bd001de14c9e8885435d633c3fa2fb98c4c0943a499e2f3f61272d",
+    "full_name": "Pooja Mehta",
+    "role": "provider",
+    "phone": "+91 9833445566",
+    "address": "FC Road, Shivajinagar, Pune"
+  },
+  {
+    "id": 5,
+    "email": "rohit@energysmart.org",
+    "password_hash": "4e17085fdbc0611286ae3c1ccfa93a3b7fa808f7fcdb9fdb10c20282a95bf73e",
+    "full_name": "Rohit Mulaparthi",
+    "role": "household",
+    "phone": "+91 9988776655",
+    "address": "Bandra West, Mumbai"
+  },
+  {
+    "id": 6,
+    "email": "technician@energysmart.org",
+    "password_hash": "3000e18884ba919731332352d9b99363bc6914a152a368c314b57854a215e98c",
+    "full_name": "Sanjay Verma",
+    "role": "provider",
+    "phone": "+91 9876543210",
+    "address": "Mumbai, India"
+  }
+]

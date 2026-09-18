@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
 import path from "path";
+import fs from "fs";
+import crypto from "crypto";
 import cors from "cors";
 import multer from "multer";
 import { createServer as createViteServer } from "vite";
@@ -97,12 +99,45 @@ interface ServiceRequest {
   status: string;
 }
 
-// Initial In-Memory State
-const users: User[] = [
+// ============================================================
+// Password Security & Hashing Helpers
+// ============================================================
+const AUTH_SALT = "smart_energy_auth_salt_v1_secure";
+
+function hashPassword(password: string): string {
+  return crypto.createHash("sha256").update(password + AUTH_SALT).digest("hex");
+}
+
+function verifyPassword(plainPassword: string, storedHashOrPlain: string): boolean {
+  if (!plainPassword || !storedHashOrPlain) return false;
+  // Support legacy plain text for initial seed accounts
+  if (storedHashOrPlain === plainPassword) return true;
+  const hashed = hashPassword(plainPassword);
+  return hashed === storedHashOrPlain;
+}
+
+// Persistent Storage Directory
+const DATA_DIR = path.join(process.cwd(), "data");
+const USERS_FILE = path.join(DATA_DIR, "users.json");
+const HOUSEHOLDS_FILE = path.join(DATA_DIR, "households.json");
+const PROVIDERS_FILE = path.join(DATA_DIR, "providers.json");
+
+function ensureDataDir() {
+  if (!fs.existsSync(DATA_DIR)) {
+    try {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    } catch (e) {
+      console.warn("Could not create data dir:", e);
+    }
+  }
+}
+
+// Initial In-Memory State & Seeds
+const initialUsers: User[] = [
   {
     id: 1,
     email: "household@example.com",
-    password_hash: "password123",
+    password_hash: hashPassword("password123"),
     full_name: "Alex Sharma",
     role: "household",
     phone: "+91 9876543210",
@@ -111,7 +146,7 @@ const users: User[] = [
   {
     id: 2,
     email: "provider@example.com",
-    password_hash: "password123",
+    password_hash: hashPassword("password123"),
     full_name: "Rajesh Kumar",
     role: "provider",
     phone: "+91 9811223344",
@@ -120,7 +155,7 @@ const users: User[] = [
   {
     id: 3,
     email: "sparky@example.com",
-    password_hash: "password123",
+    password_hash: hashPassword("password123"),
     full_name: "Vikram Singh",
     role: "provider",
     phone: "+91 9822334455",
@@ -129,13 +164,39 @@ const users: User[] = [
   {
     id: 4,
     email: "solar@example.com",
-    password_hash: "password123",
+    password_hash: hashPassword("password123"),
     full_name: "Pooja Mehta",
     role: "provider",
     phone: "+91 9833445566",
     address: "FC Road, Shivajinagar, Pune",
   },
 ];
+
+function loadUsers(): User[] {
+  ensureDataDir();
+  if (fs.existsSync(USERS_FILE)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+    } catch (e) {
+      console.warn("Failed to load users from disk, using seeds", e);
+    }
+  }
+  return [...initialUsers];
+}
+
+function saveUsersToDisk() {
+  ensureDataDir();
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf-8");
+  } catch (e) {
+    console.warn("Failed to persist users to disk:", e);
+  }
+}
+
+const users: User[] = loadUsers();
 
 const households: Household[] = [
   {
@@ -276,7 +337,7 @@ let providers: Provider[] = [
 let serviceRequests: ServiceRequest[] = [];
 let nextReadingId = 100;
 let nextApplianceId = 100;
-let nextUserId = 10;
+let nextUserId = Math.max(...users.map((u) => u.id), 0) + 1;
 let nextServiceRequestId = 1;
 
 // Month names helper
@@ -681,26 +742,34 @@ app.get("/api/health", (_req: Request, res: Response) => {
 // Authentication
 app.post("/api/auth/register", (req: Request, res: Response) => {
   const { email, full_name, password, role, phone, address, business_name, categories } = req.body;
-  if (!email || !full_name) {
-    return res.status(400).json({ detail: "Email and full name are required." });
+  if (!email || typeof email !== "string" || !email.trim()) {
+    return res.status(400).json({ detail: "A valid email address is required." });
+  }
+  if (!full_name || typeof full_name !== "string" || !full_name.trim()) {
+    return res.status(400).json({ detail: "Full name is required." });
+  }
+  if (!password || typeof password !== "string" || password.length < 6) {
+    return res.status(400).json({ detail: "Password must be at least 6 characters long." });
   }
 
-  const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const cleanEmail = email.toLowerCase().trim();
+  const existing = users.find((u) => u.email.toLowerCase() === cleanEmail);
   if (existing) {
-    return res.status(400).json({ detail: "Email already registered." });
+    return res.status(400).json({ detail: "An account with this email address already exists. Please sign in instead." });
   }
 
   const roleVal = role === "provider" ? "provider" : "household";
   const newUser: User = {
     id: nextUserId++,
-    email: email.toLowerCase().trim(),
-    password_hash: password || "password123",
+    email: cleanEmail,
+    password_hash: hashPassword(password),
     full_name: full_name.trim(),
     role: roleVal,
-    phone: phone || "+91 9876543210",
-    address: address || "Mumbai, India",
+    phone: phone?.trim() || "+91 9876543210",
+    address: address?.trim() || "Mumbai, India",
   };
   users.push(newUser);
+  saveUsersToDisk();
 
   if (roleVal === "household") {
     households.push({
@@ -717,8 +786,8 @@ app.post("/api/auth/register", (req: Request, res: Response) => {
     providers.push({
       id: providers.length + 1,
       user_id: newUser.id,
-      business_name: business_name || `${newUser.full_name} Services`,
-      categories: categories || "Electrical Maintenance, AC Service",
+      business_name: business_name?.trim() || `${newUser.full_name} Services`,
+      categories: categories?.trim() || "Electrical Maintenance, AC Service",
       experience_years: 5,
       location: "Mumbai",
       base_price: "₹500 - ₹1500",
@@ -729,64 +798,51 @@ app.post("/api/auth/register", (req: Request, res: Response) => {
     });
   }
 
-  res.json({ message: "User registered successfully", id: newUser.id });
+  res.status(201).json({ 
+    message: "User registered successfully", 
+    user: {
+      id: newUser.id,
+      email: newUser.email,
+      full_name: newUser.full_name,
+      role: newUser.role,
+    }
+  });
 });
 
 app.post("/api/auth/login", (req: Request, res: Response) => {
   const { email, password, role } = req.body;
-  if (!email) {
+  if (!email || typeof email !== "string" || !email.trim()) {
     return res.status(400).json({ detail: "Email address is required." });
+  }
+  if (!password || typeof password !== "string") {
+    return res.status(400).json({ detail: "Password is required." });
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  let user = users.find((u) => u.email.toLowerCase() === cleanEmail);
+  const user = users.find((u) => u.email.toLowerCase() === cleanEmail);
 
+  // Exact check: user must exist in the database
   if (!user) {
-    // Seamless account creation for frictionless testing
-    const roleVal = role === "provider" || cleanEmail.includes("provider") ? "provider" : "household";
-    const namePart = cleanEmail.split("@")[0].replace(/[._]/g, " ");
-    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+    return res.status(401).json({ 
+      detail: "No account found with this email. Please check your email or create a new account." 
+    });
+  }
 
-    user = {
-      id: nextUserId++,
-      email: cleanEmail,
-      password_hash: password || "password123",
-      full_name: formattedName || "Energy User",
-      role: roleVal,
-      phone: "+91 9876543210",
-      address: "Mumbai, India",
-    };
-    users.push(user);
+  // Exact check: password must match the hashed or stored password
+  const isValidPassword = verifyPassword(password, user.password_hash);
+  if (!isValidPassword) {
+    return res.status(401).json({ 
+      detail: "Incorrect password. Please check your password and try again." 
+    });
+  }
 
-    if (roleVal === "household") {
-      households.push({
-        id: households.length + 1,
-        user_id: user.id,
-        home_type: "Apartment",
-        size_sqft: 1100,
-        occupants: 3,
-        location: "Mumbai",
-        monthly_budget: 3200.0,
-        solar_available: false,
-      });
-    } else {
-      providers.push({
-        id: providers.length + 1,
-        user_id: user.id,
-        business_name: `${user.full_name} Services`,
-        categories: "Electrical, AC Services",
-        experience_years: 4,
-        location: "Mumbai",
-        base_price: "₹500",
-        description: "Professional home energy technician.",
-        availability_status: "Available",
-        rating: 4.9,
-        verified: true,
-      });
-    }
-  } else if (role && (role === "household" || role === "provider")) {
-    // Update role if explicitly requested during login
-    user.role = role;
+  // Check role: prevent confusing cross-role logins if user explicitly requested a different role
+  if (role && (role === "household" || role === "provider") && user.role !== role) {
+    const roleName = user.role === "provider" ? "Service Provider" : "Household Resident";
+    return res.status(403).json({
+      detail: `This account is registered as a ${roleName}. Please switch to the ${roleName} tab to sign in.`,
+      registered_role: user.role,
+    });
   }
 
   res.json({

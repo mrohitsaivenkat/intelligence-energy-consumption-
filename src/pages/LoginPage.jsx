@@ -110,40 +110,45 @@ const LoginPage = () => {
           </div>
         )}
 
-        {/* 1-Click Quick Demo Login Section */}
-        <div className="mb-6 p-3.5 rounded-2xl bg-white/5 border border-white/10">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 mb-2.5 px-1 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Instant Demo Logins</span>
+        {/* Pre-configured Demo Accounts */}
+        <div className="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2.5 px-0.5 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Pre-Seeded Demo Accounts</span>
+            </div>
+            <span className="text-[10px] text-slate-400 normal-case">Exact credentials</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               id="demo-login-household-btn"
               onClick={() => handleDemoClick('household')}
               disabled={isSubmitting}
-              className="p-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-left"
-              title="Log in as demo resident Alex Sharma"
+              className="p-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-medium flex flex-col gap-1 transition-all text-left"
+              title="Click to sign in with seeded household credentials"
             >
-              <User className="w-4 h-4 shrink-0 text-cyan-400" />
-              <div className="truncate">
-                <div className="font-semibold leading-tight">Household</div>
-                <div className="text-[10px] text-cyan-400/70">Alex Sharma</div>
+              <div className="flex items-center gap-1.5 font-semibold text-cyan-200">
+                <User className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span>Household Demo</span>
               </div>
+              <div className="text-[11px] text-slate-400 font-mono truncate">household@example.com</div>
+              <div className="text-[10px] text-slate-400">Pass: <span className="text-slate-300 font-mono">password123</span></div>
             </button>
             <button
               type="button"
               id="demo-login-provider-btn"
               onClick={() => handleDemoClick('provider')}
               disabled={isSubmitting}
-              className="p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-left"
-              title="Log in as demo provider Rajesh Kumar"
+              className="p-3 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-medium flex flex-col gap-1 transition-all text-left"
+              title="Click to sign in with seeded provider credentials"
             >
-              <Wrench className="w-4 h-4 shrink-0 text-blue-400" />
-              <div className="truncate">
-                <div className="font-semibold leading-tight">Provider</div>
-                <div className="text-[10px] text-blue-400/70">CoolAir Tech</div>
+              <div className="flex items-center gap-1.5 font-semibold text-blue-200">
+                <Wrench className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span>Provider Demo</span>
               </div>
+              <div className="text-[11px] text-slate-400 font-mono truncate">provider@example.com</div>
+              <div className="text-[10px] text-slate-400">Pass: <span className="text-slate-300 font-mono">password123</span></div>
             </button>
           </div>
         </div>
@@ -151,15 +156,25 @@ const LoginPage = () => {
         {/* Divider */}
         <div className="relative flex items-center justify-center mb-6">
           <div className="border-t border-white/10 w-full"></div>
-          <span className="bg-slate-900 px-3 text-xs text-slate-500 font-medium uppercase">Or Sign In with Email</span>
+          <span className="bg-slate-900 px-3 text-xs text-slate-500 font-medium uppercase">Or Sign In with Registered Account</span>
           <div className="border-t border-white/10 w-full"></div>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm flex items-start gap-2 animate-fade-in">
-            <span className="font-semibold shrink-0">Error:</span>
-            <span>{error}</span>
+          <div className="mb-5 p-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm flex flex-col gap-1.5 animate-fade-in">
+            <div className="flex items-start gap-2">
+              <span className="font-semibold shrink-0">Authentication Error:</span>
+              <span>{error}</span>
+            </div>
+            {error.toLowerCase().includes("no account found") && (
+              <div className="pt-1 text-xs text-slate-300 border-t border-red-500/10 flex items-center justify-between">
+                <span>Need to register this email?</span>
+                <Link to={`/register?role=${role}`} className="text-cyan-400 font-bold hover:underline">
+                  Create Account →
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -214,8 +229,8 @@ const LoginPage = () => {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between ml-1">
-              <label className="text-xs font-semibold text-slate-300">Password</label>
-              <span className="text-[11px] text-slate-500">Any password for test accounts</span>
+              <label className="text-xs font-semibold text-slate-300">Exact Password</label>
+              <span className="text-[11px] text-slate-400">Exact match required</span>
             </div>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />

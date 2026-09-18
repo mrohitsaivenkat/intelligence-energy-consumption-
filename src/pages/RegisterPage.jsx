@@ -12,13 +12,17 @@ const RegisterPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirm_password: '',
     full_name: '',
     role: searchParams.get('role') || 'household',
+    phone: '',
+    address: '',
     business_name: '',
     categories: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,18 +34,32 @@ const RegisterPage = () => {
       setError('Please enter your full name.');
       return;
     }
-    if (!formData.email.trim()) {
-      setError('Please enter a valid email address.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim() || !emailRegex.test(formData.email.trim())) {
+      setError('Please enter a valid email address (e.g. name@example.com).');
       return;
     }
-    if (!formData.password || formData.password.length < 4) {
-      setError('Password must be at least 4 characters.');
+    if (!formData.password || formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (formData.password !== formData.confirm_password) {
+      setError('Passwords do not match. Please ensure both passwords are identical.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const res = await register(formData);
+      const res = await register({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        full_name: formData.full_name.trim(),
+        role: formData.role,
+        phone: formData.phone.trim(),
+        address: formData.address.trim(),
+        business_name: formData.business_name.trim(),
+        categories: formData.categories.trim(),
+      });
       if (res.user.role === 'provider') {
         navigate('/provider');
       } else {
@@ -175,8 +193,36 @@ const RegisterPage = () => {
             </>
           )}
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 ml-1">Phone Number (Optional)</label>
+              <input
+                id="register-phone-input"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                placeholder="+91 9876543210"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 ml-1">City / Address (Optional)</label>
+              <input
+                id="register-address-input"
+                type="text"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                placeholder="Mumbai, India"
+              />
+            </div>
+          </div>
+
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 ml-1">Password</label>
+            <div className="flex items-center justify-between ml-1">
+              <label className="text-xs font-semibold text-slate-300">Create Password</label>
+              <span className="text-[11px] text-slate-400">Min. 6 characters</span>
+            </div>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
@@ -185,7 +231,7 @@ const RegisterPage = () => {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-11 pr-11 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
                 required
               />
               <button
@@ -195,6 +241,30 @@ const RegisterPage = () => {
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-300 ml-1">Confirm Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input
+                id="register-confirmpassword-input"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={formData.confirm_password}
+                onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-11 pr-11 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+                placeholder="Re-type your password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1 transition-colors"
+                title={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
